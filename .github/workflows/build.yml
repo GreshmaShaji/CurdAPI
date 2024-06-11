@@ -8,47 +8,26 @@ permissions:
   issues: write
 
 jobs:
-  comment:
+  label_and_comment:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Label the issue based on its body content
-      uses: actions/github-script@v6
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const { owner, repo } = context.repo;
-          const issue_number = context.issue.number;
-          const issue_body = context.payload.issue.body;
+        go-version: '1.19' # Specify the version of Go you are using
 
-          let labels = [];
+    - name: Build the Go binary
+      run: go build -o issue-labeler main.go
 
-          if (!issue_body || issue_body.trim() === "") {
-            labels = ["action required"];
-          } else if (issue_body.toLowerCase().includes("version")) {
-            labels = ["documentation"];
-          } else {
-            labels = ["bug"];
-          }
-
-          await github.rest.issues.addLabels({
-            owner,
-            repo,
-            issue_number,
-            labels: labels
-          });
-
-    - name: Comment on the issue
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const { owner, repo } = context.repo;
-          const issue_number = context.issue.number;
-
-          await github.rest.issues.createComment({
-            owner,
-            repo,
-            issue_number,
-            body: "Thanks for creating or editing this issue. A new label added to the issue."
-          });
+    - name: Execute the Go binary
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+        ISSUE_NUMBER: ${{ github.event.issue.number }}
+        ISSUE_BODY: ${{ github.event.issue.body }}
+      run: ./issue-labeler
