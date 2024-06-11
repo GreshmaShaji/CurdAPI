@@ -1,6 +1,6 @@
 module github.com/golangtutorial/CurdAPI
 
-go 1.22.4
+go 1.22
 
 require (
 	github.com/google/go-github/v38 v38.1.0
