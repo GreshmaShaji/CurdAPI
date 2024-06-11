@@ -133,6 +133,9 @@ func main() {
 		log.Fatalf("Invalid issue number: %v", err)
 	}
 
+	// Assignee for bug issues
+	assignee := "GreshmaShaji"
+
 	// Create a new GitHub client
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
@@ -160,4 +163,23 @@ func main() {
 	}
 
 	log.Printf("Labels %v added to issue #%d", labels, issueNum)
+
+	// If the label is "bug", assign the issue to the specified user
+	if contains(labels, "bug") {
+		_, _, err = client.Issues.AddAssignees(ctx, owner, repo, issueNum, []string{assignee})
+		if err != nil {
+			log.Fatalf("Failed to assign issue to %s: %v", assignee, err)
+		}
+		log.Printf("Issue #%d assigned to %s", issueNum, assignee)
+	}
+}
+
+// contains checks if a slice contains a specified string
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
 }
