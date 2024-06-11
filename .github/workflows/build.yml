@@ -1,39 +1,26 @@
-name: Close Invalid Issues
+name: Issue Commenter
 
 on:
   issues:
-    types:
-      - opened
-      - edited
+    types: [opened]
 
 jobs:
-  close_invalid_issues:
+  comment:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out the repository
-      uses: actions/checkout@v2
-
-    - name: Close issues without valid template
+    - name: Comment on new issue
       uses: actions/github-script@v6
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const issue = context.payload.issue;
-          const stageNameRegex = /stage\s*:\s*\w+/i;  // Adjust regex to match your valid template
+          const issue_number = context.issue.number;
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
 
-          if (!stageNameRegex.test(issue.body)) {
-            const comment = `Hi @${issue.user.login}, this issue is being closed because it does not follow the required issue template. Please include a stage name in the format "stage: <stage_name>".`;
-
-            await github.issues.createComment({
-              ...context.repo,
-              issue_number: issue.number,
-              body: comment
-            });
-
-            await github.issues.update({
-              ...context.repo,
-              issue_number: issue.number,
-              state: 'closed'
-            });
-          }
+          await github.issues.createComment({
+            owner,
+            repo,
+            issue_number,
+            body: "Let's start work"
+          });
