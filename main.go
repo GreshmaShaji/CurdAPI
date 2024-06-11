@@ -143,9 +143,11 @@ func main() {
 
 	// Determine the label based on the issue body
 	var labels []string
+	log.Printf("issueBody %v", issueBody)
 	if issueBody == "" || strings.TrimSpace(issueBody) == "" {
 		labels = []string{"action required"}
 	} else if strings.Contains(strings.ToLower(issueBody), "version") {
+		log.Printf("Documentation label selected")
 		labels = []string{"documentation"}
 	} else {
 		labels = []string{"bug"}
